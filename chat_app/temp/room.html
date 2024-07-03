@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeChat</title>
+    <style>
+        /* Centering container */
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+           
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Style for the chat messages */
+        .message-container {
+            max-height: 300px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .message.green {
+            background-color: #d4edda; /* Light green background */
+            padding: 8px;
+            margin-bottom: 5px;
+        }
+        
+        .message.pink {
+            background-color: #f8d7da; /* Light pink background */
+            padding: 8px;
+            margin-bottom: 5px;
+        }
+
+        /* Style for the input field */
+        #textinput {
+            width: calc(100% - 80px); /* Adjust width as needed */
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        /* Style for the send button */
+        #textbutton {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff; /* Blue background */
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #textbutton:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+        .logo{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="logo"><h1>Group name:{{group}}</h1></div>
+    <div class="container">
+        <h1>{{group|json_script:"groupname"}}</h1>
+        <div class="message-container" id="chat-container">
+            {% for i in chat %}
+                {% if forloop.first %}
+                    <div class="message green">{{ i.message }}</div>
+                {% else %}
+                    <div class="message pink">{{ i.message }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <input type="text" name="" id="textinput"><br><br>
+        <button type="submit" id="textbutton">Send</button>
+    </div>
+
+    <script>
+        const group = JSON.parse(document.getElementById('groupname').textContent);
+        console.log(group);
+        const ws = new WebSocket('ws://' + window.location.host + '/ws/' + group + '/');
+        
+        ws.onopen = function (event) {
+            console.log('WebSocket opened');
+        };
+        
+        ws.onmessage = function (event) {
+            console.log('Message received:', event.data);
+            const data = JSON.parse(event.data);
+            const messageContainer = document.getElementById('chat-container');
+            const newMessage = document.createElement('div');
+            newMessage.classList.add('message');
+            
+            // Alternate colors for new messages
+            if (messageContainer.children.length % 2 === 0) {
+                newMessage.classList.add('green');
+            } else {
+                newMessage.classList.add('pink');
+            }
+            
+            newMessage.textContent = data.message;
+            messageContainer.appendChild(newMessage);
+            messageContainer.scrollTop = messageContainer.scrollHeight; // Scroll to bottom
+        };
+        
+        ws.onclose = function (event) {
+            console.error('WebSocket closed', event);
+        };
+        
+        document.getElementById('textbutton').onclick = function () {
+            const input = document.getElementById('textinput');
+            const message = input.value.trim();
+            if (message !== '') {
+                ws.send(JSON.stringify({ message }));
+                input.value = '';
+            }
+        };
+    </script>
+</body>
+
+</html>
