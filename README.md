@@ -18,7 +18,7 @@ Welcome to the **Django Chat App**! This application allows users to communicate
 
 - **Framework**: Django 🌐  
 - **Frontend**: HTML5, CSS3, JavaScript 🎨  
-- **Backend**: Django ORM, SQLite (or your preferred database) 🗄️  
+- **Backend**: Django-chanels ORM, SQLite (or your preferred database) 🗄️  
 
 ---
 
